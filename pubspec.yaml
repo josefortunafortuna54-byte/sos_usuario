@@ -1,0 +1,39 @@
+name: sos_usuario
+description: SOS Esquadra — App do Cidadão
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Backend / Auth
+  supabase_flutter: ^2.8.4
+  google_sign_in: ^6.2.1
+  http: ^1.2.2
+
+  # Localização
+  geolocator: ^14.0.2
+  google_maps_flutter: ^2.12.3
+
+  # UI
+  flutter_animate: ^4.5.0
+
+  # Sensores
+  vibration: ^2.0.0
+  audioplayers: ^5.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/sounds/
