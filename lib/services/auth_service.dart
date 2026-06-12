@@ -17,7 +17,7 @@ class AuthService {
   /// Crie «+ Criar credenciais → ID cliente OAuth → Aplicação Web», copie o
   /// ID e use esse valor aqui e em Supabase → Auth → Google → Client ID.
   static const _googleWebClientId =
-      '149671969987-trb0jl8vevursdeplt5pfs4jn22h1qa6.apps.googleusercontent.com';
+      '140830762340-g9i1q1dmvrvuh4njseogv66cpcp57kfm.apps.googleusercontent.com';
 
   static const _androidRedirect = 'io.supabase.flutter://login-callback/';
 
