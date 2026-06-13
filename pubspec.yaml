@@ -10,18 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  # Backend / Auth
   supabase_flutter: ^2.8.4
   google_sign_in: ^6.2.1
-  http: ^1.2.2
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
-  # Localização
+  http: ^1.2.2
   geolocator: ^14.0.2
   google_maps_flutter: ^2.12.3
-  # UI
   flutter_animate: ^4.5.0
-  # Sensores
   vibration: ^2.0.0
   audioplayers: ^5.2.1
 
