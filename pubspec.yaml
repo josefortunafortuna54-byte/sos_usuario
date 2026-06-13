@@ -37,3 +37,5 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1

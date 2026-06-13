@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453918337667",
+    "project_id": "sos-esquadra-fb514",
+    "storage_bucket": "sos-esquadra-fb514.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453918337667:android:3af3d716a8012cdd4349b6",
+        "android_client_info": {
+          "package_name": "com.example.sos_usuario"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTsTJ997tR5nAXrnbebhO-fRRV3ar5xio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
 
 const kSupabaseUrl = 'https://ukyybxwshluqcksqxdpj.supabase.co';
@@ -8,6 +9,7 @@ const kSupabaseAnonKey =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
   runApp(const SOSUsuarioApp());
 }
@@ -18,49 +20,11 @@ class SOSUsuarioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SOS Esquadra',
+      title: 'SOS Usuário',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0F1E),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF1E90FF),
-          secondary: Colors.red,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0A0F1E),
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF1A2035),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFF2A3050)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFF2A3050)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFF1E90FF), width: 1.5),
-          ),
-          hintStyle: const TextStyle(color: Colors.white38),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1E90FF),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        useMaterial3: true,
       ),
       home: const SplashScreen(),
     );
