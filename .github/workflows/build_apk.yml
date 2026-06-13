@@ -28,6 +28,11 @@ jobs:
       - name: Instalar dependências
         run: flutter pub get
 
+      - name: Criar local.properties com MAPS_API_KEY
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> android/local.properties
+
       - name: Build APK universal
         run: flutter build apk --release
 
