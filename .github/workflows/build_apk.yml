@@ -33,8 +33,29 @@ jobs:
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
           echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> android/local.properties
 
+      - name: Restaurar keystore
+        run: |
+          mkdir -p android/keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore/sos-release-key.jks
+          cat > android/keystore.properties << EOF2
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=keystore/sos-release-key.jks
+          EOF2
+          echo "=== Verificação ==="
+          ls -la android/keystore/
+          ls -la android/keystore.properties
+          echo "=== SHA-1 do keystore ==="
+          keytool -list -v -keystore android/keystore/sos-release-key.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}" -alias "${{ secrets.KEY_ALIAS }}" | grep SHA1
+
       - name: Build APK universal
         run: flutter build apk --release
+
+      - name: Verificar assinatura do APK gerado
+        run: |
+          jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk | grep -A2 "X.509" || true
+          keytool -printcert -jarfile build/app/outputs/flutter-apk/app-release.apk | grep SHA1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
