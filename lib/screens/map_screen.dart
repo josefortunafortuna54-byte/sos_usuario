@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/realtime_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -13,16 +13,16 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  final _db = Supabase.instance.client;
-
-  GoogleMapController? _mapCtrl;
-  Set<Marker> _markers = {};
+  final MapController _mapCtrl = MapController();
   StreamSubscription? _occStream;
   Timer? _agentTimer;
 
   LatLng _posicaoInicial = const LatLng(-8.8390, 13.2894); // Luanda
+  LatLng? _ocorrenciaPos;
+  LatLng? _agentePos;
   String _statusOcorrencia = 'A carregar...';
   String? _agentId;
+  String _tipoOcorrencia = 'SOS';
 
   @override
   void initState() {
@@ -35,79 +35,63 @@ class _MapScreenState extends State<MapScreen> {
   void dispose() {
     _occStream?.cancel();
     _agentTimer?.cancel();
-    _mapCtrl?.dispose();
     super.dispose();
   }
 
-  // ── Localização actual do utilizador ─────────────────────
   Future<void> _obterLocalizacaoActual() async {
     try {
-      final perm = await Geolocator.checkPermission();
+      LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
-        await Geolocator.requestPermission();
+        perm = await Geolocator.requestPermission();
       }
+      if (perm == LocationPermission.deniedForever) return;
+
       final pos = await Geolocator.getCurrentPosition();
       if (!mounted) return;
       setState(() => _posicaoInicial = LatLng(pos.latitude, pos.longitude));
-      _mapCtrl?.animateCamera(
-        CameraUpdate.newLatLngZoom(_posicaoInicial, 15),
-      );
+      _mapCtrl.move(_posicaoInicial, 15);
     } catch (_) {}
   }
 
-  // ── Stream da ocorrência do utilizador ───────────────────
   void _subscreverOcorrencia() {
     _occStream = RealtimeService.streamMinhaOcorrencia().listen((ocorrencia) {
       if (!mounted) return;
       if (ocorrencia == null) {
         setState(() {
           _statusOcorrencia = 'Sem ocorrência activa';
-          _markers.removeWhere((m) => m.markerId.value.startsWith('occ_'));
+          _ocorrenciaPos = null;
         });
         return;
       }
 
       final status = ocorrencia['status'] ?? 'Pendente';
-      setState(() => _statusOcorrencia = status);
+      setState(() {
+        _statusOcorrencia = status;
+        _tipoOcorrencia = ocorrencia['tipo'] ?? 'SOS';
+      });
 
-      // Marcador do SOS
       if (ocorrencia['latitude'] != null && ocorrencia['longitude'] != null) {
         final pos = LatLng(
           (ocorrencia['latitude'] as num).toDouble(),
           (ocorrencia['longitude'] as num).toDouble(),
         );
-        final marker = Marker(
-          markerId: MarkerId('occ_${ocorrencia['id']}'),
-          position: pos,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: ocorrencia['tipo'] ?? 'SOS',
-            snippet: 'Estado: $status',
-          ),
-        );
-        setState(() {
-          _markers.removeWhere((m) => m.markerId.value.startsWith('occ_'));
-          _markers.add(marker);
-        });
+        setState(() => _ocorrenciaPos = pos);
       }
 
-      // Se há agente, rastrear localização
       final novoAgentId = ocorrencia['agent_id'] as String?;
       if (novoAgentId != null && novoAgentId != _agentId) {
         _agentId = novoAgentId;
         _iniciarRastreioAgente(novoAgentId);
       } else if (novoAgentId == null) {
         _agentTimer?.cancel();
-        setState(() => _markers.removeWhere(
-            (m) => m.markerId.value == 'agent'));
+        setState(() => _agentePos = null);
       }
     });
   }
 
-  // ── Rastrear posição do agente (actualiza a cada 5s) ─────
   void _iniciarRastreioAgente(String agentId) {
     _agentTimer?.cancel();
-    _actualizarAgente(agentId); // imediato
+    _actualizarAgente(agentId);
     _agentTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       _actualizarAgente(agentId);
     });
@@ -121,26 +105,35 @@ class _MapScreenState extends State<MapScreen> {
       (loc['latitude'] as num).toDouble(),
       (loc['longitude'] as num).toDouble(),
     );
-    final marker = Marker(
-      markerId: const MarkerId('agent'),
-      position: pos,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-      infoWindow: const InfoWindow(
-        title: 'Agente',
-        snippet: 'A caminho',
-      ),
-    );
-    if (mounted) {
-      setState(() {
-        _markers.removeWhere((m) => m.markerId.value == 'agent');
-        _markers.add(marker);
-      });
-    }
+    if (mounted) setState(() => _agentePos = pos);
   }
 
-  // ── UI ────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final markers = <Marker>[];
+
+    if (_ocorrenciaPos != null) {
+      markers.add(
+        Marker(
+          point: _ocorrenciaPos!,
+          width: 44,
+          height: 44,
+          child: const Icon(Icons.location_pin, color: Colors.red, size: 44),
+        ),
+      );
+    }
+
+    if (_agentePos != null) {
+      markers.add(
+        Marker(
+          point: _agentePos!,
+          width: 44,
+          height: 44,
+          child: const Icon(Icons.local_police, color: Colors.blue, size: 38),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('O meu SOS'),
@@ -149,17 +142,20 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _posicaoInicial,
-              zoom: 14,
+          FlutterMap(
+            mapController: _mapCtrl,
+            options: MapOptions(
+              initialCenter: _posicaoInicial,
+              initialZoom: 14,
             ),
-            markers: _markers,
-            onMapCreated: (c) => _mapCtrl = c,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.sos_usuario',
+              ),
+              MarkerLayer(markers: markers),
+            ],
           ),
-          // Barra de status da ocorrência
           Positioned(
             top: 12,
             left: 16,
@@ -169,22 +165,24 @@ class _MapScreenState extends State<MapScreen> {
               decoration: BoxDecoration(
                 color: _corStatus(_statusOcorrencia),
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 6)],
               ),
               child: Row(
                 children: [
                   const Icon(Icons.circle, color: Colors.white, size: 12),
                   const SizedBox(width: 8),
-                  Text(
-                    'Estado: $_statusOcorrencia',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      '$_tipoOcorrencia — Estado: $_statusOcorrencia',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          // Legenda
           Positioned(
             bottom: 24,
             left: 16,
@@ -193,17 +191,26 @@ class _MapScreenState extends State<MapScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  _LegendaItem(cor: Colors.red, label: 'O meu SOS'),
+                  _LegendaItem(icone: Icons.location_pin, cor: Colors.red, label: 'O meu SOS'),
                   SizedBox(height: 4),
-                  _LegendaItem(cor: Colors.blue, label: 'Agente'),
+                  _LegendaItem(icone: Icons.local_police, cor: Colors.blue, label: 'Agente'),
                 ],
               ),
+            ),
+          ),
+          Positioned(
+            bottom: 24,
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.red[700],
+              onPressed: _obterLocalizacaoActual,
+              child: const Icon(Icons.my_location, color: Colors.white),
             ),
           ),
         ],
@@ -224,16 +231,17 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 class _LegendaItem extends StatelessWidget {
+  final IconData icone;
   final Color cor;
   final String label;
-  const _LegendaItem({required this.cor, required this.label});
+  const _LegendaItem({required this.icone, required this.cor, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.location_pin, color: cor, size: 18),
+        Icon(icone, color: cor, size: 18),
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 12)),
       ],
