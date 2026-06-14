@@ -325,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     const SizedBox(height: 18),
                     // Anel exterior animado
-                      child: GestureDetector(
+                      GestureDetector(
                         onTap: _enviando ? null : _enviarSos,
                         child: Stack(
                           alignment: Alignment.center,
