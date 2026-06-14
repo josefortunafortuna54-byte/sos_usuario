@@ -41,7 +41,7 @@ jobs:
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=keystore/sos-release-key.jks
+          storeFile=../keystore/sos-release-key.jks
           EOF2
           echo "=== SHA-1 do keystore ==="
           keytool -list -v -keystore android/keystore/sos-release-key.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}" -alias "${{ secrets.KEY_ALIAS }}" 2>&1 | grep -i "sha1\|alias\|error" || echo "ERRO ao ler keystore"
