@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "453918337667",
-    "project_id": "sos-esquadra-fb514",
-    "storage_bucket": "sos-esquadra-fb514.firebasestorage.app"
+    "project_number": "140830762340",
+    "project_id": "sos-esquadra",
+    "storage_bucket": "sos-esquadra.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:453918337667:android:3af3d716a8012cdd4349b6",
+        "mobilesdk_app_id": "1:140830762340:android:12832489b00e0d9ebdc671",
         "android_client_info": {
           "package_name": "com.example.sos_usuario"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "140830762340-aqcl6m62pq3us5mvjf8c3jifgipnocgb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sos_usuario",
+            "certificate_hash": "560fda9d8723e8dae8f85a2aabe2fae595754219"
+          }
+        },
+        {
+          "client_id": "140830762340-nnv0umnv9orpksc6b84ev3vj8oni5me5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCTsTJ997tR5nAXrnbebhO-fRRV3ar5xio"
+          "current_key": "AIzaSyCwYuucAQhjSW9P_NsOwcBXm5d4ijXhlHM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "140830762340-nnv0umnv9orpksc6b84ev3vj8oni5me5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
