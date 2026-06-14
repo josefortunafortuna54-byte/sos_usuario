@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 
@@ -8,8 +9,59 @@ const kSupabaseAnonKey =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
+
+  // Capturar TODOS os erros e mostrar na tela
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Material(
+      color: Colors.red[900],
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Text(
+              'ERRO:\n\n${details.exceptionAsString()}\n\n${details.stack}',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ),
+      ),
+    );
+  };
+
+  try {
+    await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
+  } catch (e, st) {
+    runApp(_ErrorApp(error: 'Supabase init falhou:\n$e\n\n$st'));
+    return;
+  }
+
   runApp(const SOSUsuarioApp());
+}
+
+class _ErrorApp extends StatelessWidget {
+  final String error;
+  const _ErrorApp({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.red[900],
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Text(error, style: const TextStyle(color: Colors.white, fontSize: 12)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class SOSUsuarioApp extends StatelessWidget {
