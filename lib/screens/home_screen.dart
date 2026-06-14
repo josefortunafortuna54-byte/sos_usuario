@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen>
       duration: const Duration(milliseconds: 900),
       lowerBound: 0.92,
       upperBound: 1.05,
-    )..repeat(reverse: true);
+    );
 
     _pulseAnim = CurvedAnimation(
       parent: _pulseCtrl, curve: Curves.easeInOut);
@@ -325,8 +325,6 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     const SizedBox(height: 18),
                     // Anel exterior animado
-                    ScaleTransition(
-                      scale: _pulseAnim,
                       child: GestureDetector(
                         onTap: _enviando ? null : _enviarSos,
                         child: Stack(
@@ -405,7 +403,6 @@ class _HomeScreenState extends State<HomeScreen>
                           ],
                         ),
                       ),
-                    ),
 
                     const SizedBox(height: 32),
 
