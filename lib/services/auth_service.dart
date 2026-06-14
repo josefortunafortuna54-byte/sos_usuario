@@ -6,7 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthService {
   static final _db = Supabase.instance.client;
   static final _firebaseAuth = fb.FirebaseAuth.instance;
-  static final _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  static final _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    serverClientId: '140830762340-nnv0umnv9orpksc6b84ev3vj8oni5me5.apps.googleusercontent.com',
+  );
 
   // ── LOGIN COM GOOGLE ─────────────────────────────────────────
   static Future<Map<String, dynamic>> loginComGoogle() async {
