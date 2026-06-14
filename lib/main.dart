@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
 
 const kSupabaseUrl = 'https://ukyybxwshluqcksqxdpj.supabase.co';
@@ -9,7 +8,6 @@ const kSupabaseAnonKey =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
   runApp(const SOSUsuarioApp());
 }
