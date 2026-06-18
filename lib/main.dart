@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 
@@ -10,58 +10,14 @@ const kSupabaseAnonKey =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Capturar TODOS os erros e mostrar na tela
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-  };
+  // Forçar barra de status clara (ícones brancos)
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
 
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Material(
-      color: Colors.red[900],
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Text(
-              'ERRO:\n\n${details.exceptionAsString()}\n\n${details.stack}',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
-        ),
-      ),
-    );
-  };
-
-  try {
-    await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
-  } catch (e, st) {
-    runApp(_ErrorApp(error: 'Supabase init falhou:\n$e\n\n$st'));
-    return;
-  }
-
+  await Supabase.initialize(url: kSupabaseUrl, anonKey: kSupabaseAnonKey);
   runApp(const SOSUsuarioApp());
-}
-
-class _ErrorApp extends StatelessWidget {
-  final String error;
-  const _ErrorApp({required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.red[900],
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Text(error, style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class SOSUsuarioApp extends StatelessWidget {
@@ -72,11 +28,71 @@ class SOSUsuarioApp extends StatelessWidget {
     return MaterialApp(
       title: 'SOS Usuário',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
-      ),
+      // TEMA ESCURO FORÇADO
+      themeMode: ThemeMode.dark,
+      theme: _lightTheme(),
+      darkTheme: _darkTheme(),
       home: const SplashScreen(),
     );
   }
+
+  ThemeData _darkTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0A1628),
+      colorScheme: const ColorScheme.dark(
+        primary: Color(0xFF1E90FF),
+        secondary: Color(0xFF1E90FF),
+        surface: Color(0xFF0D1F3C),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF0A1628),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white70),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 16),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: const TextStyle(color: Colors.white38),
+        filled: true,
+        fillColor: const Color(0xFF0D1F3C),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.white12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFF1E90FF)),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFF0D1F3C),
+        labelStyle: const TextStyle(color: Colors.white70, fontSize: 12),
+        side: const BorderSide(color: Colors.white12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1E90FF),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(color: Colors.white70),
+        bodySmall: TextStyle(color: Colors.white54),
+      ),
+    );
+  }
+
+  ThemeData _lightTheme() => _darkTheme(); // Sempre escuro
 }
