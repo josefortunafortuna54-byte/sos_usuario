@@ -3,6 +3,7 @@ import 'package:vibration/vibration.dart';
 import '../services/auth_service.dart';
 import '../services/sos_service.dart';
 import 'history_screen.dart';
+import 'report_vehicle_screen.dart';
 import 'login_screen.dart';
 import 'map_screen.dart';
 
@@ -200,6 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
               if (userId == null) return;
               Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryScreen(userId: userId)));
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.directions_car, color: Colors.orange),
+            tooltip: 'Reportar Roubo',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportVehicleScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white54),
