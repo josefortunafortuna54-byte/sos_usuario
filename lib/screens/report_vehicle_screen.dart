@@ -10,15 +10,16 @@ class ReportVehicleScreen extends StatefulWidget {
 }
 
 class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
-  final _marcaCtrl      = TextEditingController();
-  final _modeloCtrl     = TextEditingController();
-  final _matriculaCtrl  = TextEditingController();
-  final _corCtrl        = TextEditingController();
-  final _localCtrl      = TextEditingController();
+  final _marcaCtrl     = TextEditingController();
+  final _modeloCtrl    = TextEditingController();
+  final _matriculaCtrl = TextEditingController();
+  final _corCtrl       = TextEditingController();
+  final _localCtrl     = TextEditingController();
 
-  bool _enviando = false;
-  bool _enviado  = false;
-  String _erro   = '';
+  String _tipo    = 'Viatura';
+  bool _enviando  = false;
+  bool _enviado   = false;
+  String _erro    = '';
 
   @override
   void dispose() {
@@ -37,16 +38,14 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
       setState(() => _erro = 'Preencha todos os campos.');
       return;
     }
-
     setState(() { _enviando = true; _erro = ''; });
 
     try {
       Position? pos;
-      try {
-        pos = await Geolocator.getCurrentPosition();
-      } catch (_) {}
+      try { pos = await Geolocator.getCurrentPosition(); } catch (_) {}
 
       await VehicleService.reportarRoubo(
+        tipo:       _tipo,
         marca:      _marcaCtrl.text.trim(),
         modelo:     _modeloCtrl.text.trim(),
         matricula:  _matriculaCtrl.text.trim(),
@@ -58,7 +57,6 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
       setState(() => _enviado = true);
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) Navigator.pop(context);
-
     } catch (e) {
       setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
     } finally {
@@ -70,7 +68,7 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reportar Roubo de Viatura'),
+        title: const Text('Reportar Roubo'),
         backgroundColor: const Color(0xFF0A1628),
         foregroundColor: Colors.white,
       ),
@@ -90,7 +88,7 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.directions_car, color: Colors.orange),
+                    Icon(Icons.warning_amber, color: Colors.orange),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -103,17 +101,58 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
               ),
               const SizedBox(height: 20),
 
-              _Campo('Marca', 'Ex: Toyota', _marcaCtrl),
+              // Tipo de veículo
+              const Text('Tipo de veículo',
+                  style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Row(
+                children: ['Viatura', 'Motorizada'].map((t) {
+                  final sel = _tipo == t;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _tipo = t),
+                      child: Container(
+                        margin: EdgeInsets.only(right: t == 'Viatura' ? 8 : 0),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: sel ? Colors.orange.withOpacity(0.2) : const Color(0xFF0D1F3C),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: sel ? Colors.orange : Colors.white12,
+                            width: sel ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              t == 'Viatura' ? Icons.directions_car : Icons.two_wheeler,
+                              color: sel ? Colors.orange : Colors.white54,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(t, style: TextStyle(
+                              color: sel ? Colors.orange : Colors.white54,
+                              fontWeight: sel ? FontWeight.bold : FontWeight.normal,
+                            )),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+
+              _Campo('Marca', _tipo == 'Viatura' ? 'Ex: Toyota' : 'Ex: Honda', _marcaCtrl),
               const SizedBox(height: 12),
-              _Campo('Modelo', 'Ex: Hilux', _modeloCtrl),
+              _Campo('Modelo', _tipo == 'Viatura' ? 'Ex: Hilux' : 'Ex: CG 150', _modeloCtrl),
               const SizedBox(height: 12),
-              _Campo('Matrícula', 'Ex: LD-42-91-AB', _matriculaCtrl,
-                  upper: true),
+              _Campo('Matrícula', 'Ex: LD-42-91-AB', _matriculaCtrl, upper: true),
               const SizedBox(height: 12),
               _Campo('Cor', 'Ex: Branco', _corCtrl),
               const SizedBox(height: 12),
-              _Campo('Local do furto', 'Ex: Maianga, junto ao mercado',
-                  _localCtrl),
+              _Campo('Local do furto', 'Ex: Maianga, junto ao mercado', _localCtrl),
               const SizedBox(height: 24),
 
               if (_erro.isNotEmpty)
@@ -125,30 +164,21 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.red.withOpacity(0.3)),
                   ),
-                  child: Text(_erro,
-                      style: const TextStyle(color: Colors.redAccent)),
+                  child: Text(_erro, style: const TextStyle(color: Colors.redAccent)),
                 ),
 
               ElevatedButton.icon(
                 onPressed: _enviando ? null : _reportar,
                 icon: _enviando
-                    ? const SizedBox(
-                        width: 18, height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(width: 18, height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : Icon(_enviado ? Icons.check : Icons.send),
-                label: Text(_enviado
-                    ? 'Alerta enviado!'
-                    : _enviando
-                        ? 'A enviar...'
-                        : 'Enviar Alerta'),
+                label: Text(_enviado ? 'Alerta enviado!' : _enviando ? 'A enviar...' : 'Enviar Alerta'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _enviado ? Colors.green : Colors.orange[800],
+                  backgroundColor: _enviado ? Colors.green : Colors.orange[800],
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -172,17 +202,13 @@ class _Campo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
-                fontWeight: FontWeight.w600)),
+        Text(label, style: const TextStyle(
+            color: Colors.white54, fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         TextField(
           controller: ctrl,
           style: const TextStyle(color: Colors.white),
-          textCapitalization:
-              upper ? TextCapitalization.characters : TextCapitalization.words,
+          textCapitalization: upper ? TextCapitalization.characters : TextCapitalization.words,
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
