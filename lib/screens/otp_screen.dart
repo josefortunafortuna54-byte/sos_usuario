@@ -38,13 +38,14 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _iniciarContagem() {
     _timer?.cancel();
-    setState(() { _countdown = 60; _reenviar = false; });
+    if (mounted) setState(() { _countdown = 60; _reenviar = false; });
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
       if (_countdown == 0) {
         t.cancel();
-        if (mounted) setState(() => _reenviar = true);
+        setState(() => _reenviar = true);
       } else {
-        if (mounted) setState(() => _countdown--);
+        setState(() => _countdown--);
       }
     });
   }
@@ -66,7 +67,7 @@ class _OtpScreenState extends State<OtpScreen> {
         (_) => false,
       );
     } catch (e) {
-      setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
+      if (mounted) setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
       // Limpar campos em caso de erro
       for (final c in _ctls) c.clear();
       _foci[0].requestFocus();
@@ -79,15 +80,14 @@ class _OtpScreenState extends State<OtpScreen> {
     setState(() { _loading = true; _erro = ''; });
     try {
       await AuthService.reenviarOtp(widget.authId);
+      if (!mounted) return;
       _iniciarContagem();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Novo código enviado por SMS.'),
             backgroundColor: Colors.green,
           ),
         );
-      }
     } catch (e) {
       setState(() => _erro = 'Erro ao reenviar. Tente novamente.');
     } finally {

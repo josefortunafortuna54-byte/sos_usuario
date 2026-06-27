@@ -58,7 +58,7 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
+      if (mounted) setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }

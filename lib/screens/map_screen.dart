@@ -4,6 +4,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/realtime_service.dart';
+import '../services/location_service.dart';
+import 'chat_screen.dart';
+import 'media_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -15,14 +18,15 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapCtrl = MapController();
   StreamSubscription? _occStream;
-  Timer? _agentTimer;
+  StreamSubscription<Map<String, dynamic>?>? _agentStream;
 
-  LatLng _posicaoInicial = const LatLng(-8.8390, 13.2894); // Luanda
+  LatLng _posicaoInicial = const LatLng(-8.8390, 13.2894);
   LatLng? _ocorrenciaPos;
   LatLng? _agentePos;
   String _statusOcorrencia = 'A carregar...';
   String? _agentId;
   String _tipoOcorrencia = 'SOS';
+  String? _occurrenceId;
 
   @override
   void initState() {
@@ -34,7 +38,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _occStream?.cancel();
-    _agentTimer?.cancel();
+    _agentStream?.cancel();
     super.dispose();
   }
 
@@ -70,6 +74,8 @@ class _MapScreenState extends State<MapScreen> {
         _tipoOcorrencia = ocorrencia['tipo'] ?? 'SOS';
       });
 
+      setState(() => _occurrenceId = ocorrencia['id'] as String?);
+
       if (ocorrencia['latitude'] != null && ocorrencia['longitude'] != null) {
         final pos = LatLng(
           (ocorrencia['latitude'] as num).toDouble(),
@@ -81,31 +87,25 @@ class _MapScreenState extends State<MapScreen> {
       final novoAgentId = ocorrencia['agent_id'] as String?;
       if (novoAgentId != null && novoAgentId != _agentId) {
         _agentId = novoAgentId;
-        _iniciarRastreioAgente(novoAgentId);
+        _subscreverAgente(novoAgentId);
       } else if (novoAgentId == null) {
-        _agentTimer?.cancel();
+        _agentStream?.cancel();
         setState(() => _agentePos = null);
       }
     });
   }
 
-  void _iniciarRastreioAgente(String agentId) {
-    _agentTimer?.cancel();
-    _actualizarAgente(agentId);
-    _agentTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _actualizarAgente(agentId);
+  void _subscreverAgente(String agentId) {
+    _agentStream?.cancel();
+    _agentStream = LocationService.streamAgente(agentId).listen((loc) {
+      if (!mounted) return;
+      if (loc == null) return;
+      final pos = LatLng(
+        (loc['latitude'] as num).toDouble(),
+        (loc['longitude'] as num).toDouble(),
+      );
+      setState(() => _agentePos = pos);
     });
-  }
-
-  Future<void> _actualizarAgente(String agentId) async {
-    final loc = await RealtimeService.localizacaoAgente(agentId);
-    if (loc == null || !mounted) return;
-
-    final pos = LatLng(
-      (loc['latitude'] as num).toDouble(),
-      (loc['longitude'] as num).toDouble(),
-    );
-    if (mounted) setState(() => _agentePos = pos);
   }
 
   @override
@@ -207,10 +207,33 @@ class _MapScreenState extends State<MapScreen> {
           Positioned(
             bottom: 24,
             right: 16,
-            child: FloatingActionButton(
-              backgroundColor: Colors.red[700],
-              onPressed: _obterLocalizacaoActual,
-              child: const Icon(Icons.my_location, color: Colors.white),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_occurrenceId != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: FloatingActionButton.small(
+                      backgroundColor: const Color(0xFF1E90FF),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChatScreen(occurrenceId: _occurrenceId!, occurrenceTitle: '$_tipoOcorrencia — $_statusOcorrencia'))),
+                      child: const Icon(Icons.chat, color: Colors.white),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: FloatingActionButton.small(
+                      backgroundColor: Colors.green,
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MediaScreen(occurrenceId: _occurrenceId!))),
+                      child: const Icon(Icons.photo_camera, color: Colors.white),
+                    ),
+                  ),
+                ],
+                FloatingActionButton(
+                  backgroundColor: Colors.red[700],
+                  onPressed: _obterLocalizacaoActual,
+                  child: const Icon(Icons.my_location, color: Colors.white),
+                ),
+              ],
             ),
           ),
         ],

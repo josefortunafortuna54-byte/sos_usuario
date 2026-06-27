@@ -6,6 +6,7 @@ import 'history_screen.dart';
 import 'report_vehicle_screen.dart';
 import 'login_screen.dart';
 import 'map_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -185,6 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white54),
+            tooltip: 'Notificações',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+          ),
           IconButton(
             icon: const Icon(Icons.map_outlined, color: Colors.white54),
             tooltip: 'Mapa',
