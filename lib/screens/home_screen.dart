@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 import '../services/auth_service.dart';
@@ -66,8 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _enviarSos() async {
     if (_enviando) return;
 
-    if (await Vibration.hasVibrator() ?? false) {
-      Vibration.vibrate(pattern: [0, 200, 100, 200]);
+    if (_usuario == null) {
+      _log('Erro: Utilizador não encontrado.');
+      return;
     }
 
     setState(() {
@@ -78,18 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _log('Início do envio SOS (${_tipoSelecionado.toUpperCase()}).');
 
     try {
-      if (_usuario == null) throw Exception('Utilizador não encontrado.');
-      final userId = _usuario!['id'] ?? _usuario!['auth_id'];
-      if (userId == null) {
-        throw Exception('Perfil incompleto. Termine sessão e entre novamente.');
-      }
-      _log('Utilizador OK: $userId');
-
-      setState(() => _statusMsg = 'A enviar SOS...');
-      _log('A enviar dados para Supabase...');
-
       await SosService.enviarSos(
-        userId: userId,
         tipo: _tipoSelecionado,
         descricao: _descricaoCtrl.text.trim().isEmpty
             ? null
@@ -114,6 +105,13 @@ class _HomeScreenState extends State<HomeScreen> {
           _descricaoCtrl.clear();
         });
       }
+    } on TimeoutException {
+      setState(() {
+        _statusMsg = 'O servidor demorou muito a responder. Verifique a sua ligação.';
+      });
+      _log('Timeout ao enviar SOS.');
+      await Future.delayed(const Duration(seconds: 4));
+      if (mounted) setState(() => _statusMsg = '');
     } catch (e) {
       setState(() {
         _statusMsg = e.toString().replaceAll('Exception: ', '');
@@ -203,9 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'Histórico',
             onPressed: () {
               if (_usuario == null) return;
-              final userId = _usuario!['id'] ?? _usuario!['auth_id'];
-              if (userId == null) return;
-              Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryScreen(userId: userId)));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen()));
             },
           ),
           IconButton(
@@ -408,9 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
               GestureDetector(
                 onTap: () {
                   if (_usuario == null) return;
-                  final userId = _usuario!['id'] ?? _usuario!['auth_id'];
-                  if (userId == null) return;
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryScreen(userId: userId)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen()));
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 14),

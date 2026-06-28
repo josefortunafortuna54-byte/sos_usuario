@@ -4,13 +4,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SosService {
   static final _db = Supabase.instance.client;
 
-  /// Envia SOS — compatível com home_screen.dart original
   static Future<Map<String, dynamic>> enviarSos({
-    required dynamic userId,
     required String tipo,
     String? descricao,
   }) async {
-    // Obter localização
+    final user = _db.auth.currentUser;
+    if (user == null) {
+      throw Exception('Sessão expirada. Faça login novamente.');
+    }
+
     Position? posicao;
     try {
       LocationPermission perm = await Geolocator.checkPermission();
@@ -25,13 +27,15 @@ class SosService {
           ),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      throw Exception('Erro ao obter localização: $e');
+    }
 
     final res = await _db.from('occurrences').insert({
-      'user_id':   userId.toString(),
-      'tipo':      tipo,
-      'status':    'Pendente',
-      'latitude':  posicao?.latitude,
+      'user_id': user.id,
+      'tipo': tipo,
+      'status': 'Pendente',
+      'latitude': posicao?.latitude,
       'longitude': posicao?.longitude,
       if (descricao != null && descricao.isNotEmpty) 'descricao': descricao,
     }).select().single();
@@ -39,25 +43,33 @@ class SosService {
     return res;
   }
 
-  /// Histórico — compatível com history_screen.dart (userId como Object)
-  static Future<List<Map<String, dynamic>>> historico(Object userId) async {
+  static Future<List<Map<String, dynamic>>> historico() async {
+    final user = _db.auth.currentUser;
+    if (user == null) return [];
+
     final res = await _db
         .from('occurrences')
         .select()
-        .eq('user_id', userId.toString())
+        .eq('user_id', user.id)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(res);
   }
 
-  /// Cancelar ocorrência activa
   static Future<void> cancelarSOS(String occurrenceId) async {
-    await _db
+    final user = _db.auth.currentUser;
+    if (user == null) throw Exception('Sessão expirada.');
+
+    final res = await _db
         .from('occurrences')
         .update({'status': 'Finalizado'})
-        .eq('id', occurrenceId);
+        .eq('id', occurrenceId)
+        .eq('user_id', user.id);
+
+    if (res == null || (res is List && res.isEmpty)) {
+      throw Exception('Não foi possível cancelar a ocorrência.');
+    }
   }
 
-  /// Ocorrência activa do utilizador
   static Future<Map<String, dynamic>?> ocorrenciaActiva() async {
     final user = _db.auth.currentUser;
     if (user == null) return null;

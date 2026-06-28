@@ -37,8 +37,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/logo.png', width: 120, errorBuilder: (_, __, ___) =>
-                const Icon(Icons.shield, size: 120, color: Colors.white)),
+            Image.asset('assets/images/logo.png', width: 180, errorBuilder: (_, __, ___) =>
+                const Icon(Icons.shield, size: 180, color: Colors.white)),
             const SizedBox(height: 24),
             const Text('SOS ESQUADRA',
                 style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 4)),

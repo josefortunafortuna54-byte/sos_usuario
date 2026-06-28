@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/sos_service.dart';
 
 class HistoryScreen extends StatefulWidget {
-  final Object userId;
-  const HistoryScreen({super.key, required this.userId});
+  const HistoryScreen({super.key});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -38,7 +37,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _carregar() async {
     setState(() => _loading = true);
     try {
-      final dados = await SosService.historico(widget.userId);
+      final dados = await SosService.historico();
       if (mounted) setState(() => _ocorrencias = dados);
     } catch (_) {
     } finally {
