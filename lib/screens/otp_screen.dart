@@ -89,7 +89,7 @@ class _OtpScreenState extends State<OtpScreen> {
           ),
         );
     } catch (e) {
-      setState(() => _erro = 'Erro ao reenviar. Tente novamente.');
+      if (mounted) setState(() => _erro = 'Erro ao reenviar. Tente novamente.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }

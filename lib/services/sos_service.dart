@@ -63,9 +63,11 @@ class SosService {
         .from('occurrences')
         .update({'status': 'Finalizado'})
         .eq('id', occurrenceId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select()
+        .maybeSingle();
 
-    if (res == null || (res is List && res.isEmpty)) {
+    if (res == null) {
       throw Exception('Não foi possível cancelar a ocorrência.');
     }
   }

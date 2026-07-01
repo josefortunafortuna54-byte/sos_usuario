@@ -39,7 +39,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     try {
       final dados = await SosService.historico();
       if (mounted) setState(() => _ocorrencias = dados);
-    } catch (_) {
+    } catch (e) {
+      if (mounted) setState(() => _ocorrencias = []);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao carregar: $e'), backgroundColor: Colors.red),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }

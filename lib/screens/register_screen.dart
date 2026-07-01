@@ -111,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
     } catch (e) {
-      setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
+      if (mounted) setState(() => _erro = e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

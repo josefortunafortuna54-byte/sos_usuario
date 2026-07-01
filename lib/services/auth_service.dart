@@ -131,5 +131,19 @@ class AuthService {
     return _db.from('users').select().eq('auth_id', user.id).maybeSingle();
   }
 
+  static Future<void> actualizarPerfil({
+    required String nome,
+    required String telefone,
+    required String provincia,
+  }) async {
+    final user = _db.auth.currentUser;
+    if (user == null) throw Exception('Não autenticado');
+    await _db.from('users').update({
+      'nome': nome,
+      'telefone': telefone,
+      'provincia': provincia,
+    }).eq('auth_id', user.id);
+  }
+
   static bool get temSessao => _db.auth.currentSession != null;
 }

@@ -8,6 +8,8 @@ import 'report_vehicle_screen.dart';
 import 'login_screen.dart';
 import 'map_screen.dart';
 import 'notifications_screen.dart';
+import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _enviando = false;
   String _statusMsg = '';
   bool _enviado = false;
+  String? _ultimaOcorrenciaId;
   final List<String> _eventos = [];
   String _tipoSelecionado = 'Emergência';
   final TextEditingController _descricaoCtrl = TextEditingController();
@@ -87,15 +90,20 @@ class _HomeScreenState extends State<HomeScreen> {
             : _descricaoCtrl.text.trim(),
       ).timeout(const Duration(seconds: 20));
 
-      if (await Vibration.hasVibrator()) {
-        Vibration.vibrate(pattern: [0, 100, 50, 100, 50, 300]);
-      }
+      try {
+        if (await Vibration.hasVibrator() == true) {
+          Vibration.vibrate(pattern: [0, 100, 50, 100, 50, 300]);
+        }
+      } catch (_) {}
 
-      setState(() {
+        setState(() {
         _enviado   = true;
         _statusMsg = '✓ SOS enviado! Aguarde a polícia.';
       });
       _log('SOS enviado com sucesso.');
+
+      final agora = await SosService.ocorrenciaActiva();
+      _ultimaOcorrenciaId = agora?['id'] as String?;
 
       await Future.delayed(const Duration(seconds: 5));
       if (mounted) {
@@ -122,6 +130,47 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) setState(() => _enviando = false);
       _log('Fluxo SOS finalizado.');
+    }
+  }
+
+  Future<void> _cancelarSos(String id) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF0D1F3C),
+        title: const Text('Cancelar SOS', style: TextStyle(color: Colors.white)),
+        content: const Text('Tem a certeza que pretende cancelar este pedido de socorro?', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Não', style: TextStyle(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Sim, cancelar'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      try {
+        await SosService.cancelarSOS(id);
+        if (mounted) {
+          setState(() {
+            _enviado = false;
+            _statusMsg = 'SOS cancelado.';
+            _ultimaOcorrenciaId = null;
+          });
+        }
+        _log('SOS cancelado pelo utilizador.');
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao cancelar: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
@@ -189,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'Notificações',
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          IconButton(
+              IconButton(
             icon: const Icon(Icons.map_outlined, color: Colors.white54),
             tooltip: 'Mapa',
             onPressed: () {
@@ -210,9 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportVehicleScreen())),
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white54),
-            tooltip: 'Sair',
-            onPressed: _logout,
+            icon: const Icon(Icons.settings, color: Colors.white38),
+            tooltip: 'Configurações',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -375,6 +424,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(color: Colors.white38, fontSize: 13),
                   ),
                 ),
+
+              if (_enviado && _ultimaOcorrenciaId != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _cancelarSos(_ultimaOcorrenciaId!),
+                    icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
+                    label: const Text('Cancelar SOS', style: TextStyle(color: Colors.red)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 16),
 
