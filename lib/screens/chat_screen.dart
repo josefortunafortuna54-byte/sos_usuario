@@ -133,7 +133,7 @@ class _MessageBubble extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(hora, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10)),
+                Text(hora, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10)),
                 if (isMe) ...[
                   const SizedBox(width: 4),
                   Icon(Icons.done_all, size: 12, color: msg['read_at'] != null ? Colors.lightBlue : Colors.white38),

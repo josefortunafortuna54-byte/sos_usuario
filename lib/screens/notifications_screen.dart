@@ -62,7 +62,7 @@ class _NotificacaoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: lida ? const Color(0xFF0A1628) : const Color(0xFF0D1F3C),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: lida ? Colors.white12 : const Color(0xFF1E90FF).withOpacity(0.3)),
+          border: Border.all(color: lida ? Colors.white12 : const Color(0xFF1E90FF).withValues(alpha: 0.3)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

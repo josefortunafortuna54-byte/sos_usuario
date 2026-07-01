@@ -115,7 +115,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           color: const Color(0xFF0D1B2A),
                           borderRadius: BorderRadius.circular(12),
                           border:
-                              Border.all(color: cor.withOpacity(0.3)),
+                              Border.all(color: cor.withValues(alpha: 0.3)),
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -124,9 +124,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             width: 44, height: 44,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: cor.withOpacity(0.12),
+                              color: cor.withValues(alpha: 0.12),
                               border: Border.all(
-                                  color: cor.withOpacity(0.4)),
+                                  color: cor.withValues(alpha: 0.4)),
                             ),
                             child: Icon(icone, color: cor, size: 20),
                           ),
@@ -164,10 +164,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: cor.withOpacity(0.12),
+                              color: cor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: cor.withOpacity(0.3)),
+                                  color: cor.withValues(alpha: 0.3)),
                             ),
                             child: Text(
                               status,

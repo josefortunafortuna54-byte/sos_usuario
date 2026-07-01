@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : _descricaoCtrl.text.trim(),
       ).timeout(const Duration(seconds: 20));
 
-      if (await Vibration.hasVibrator() ?? false) {
+      if (await Vibration.hasVibrator()) {
         Vibration.vibrate(pattern: [0, 100, 50, 100, 50, 300]);
       }
 
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: _enviado ? Colors.green : Colors.red,
                       boxShadow: [
                         BoxShadow(
-                          color: (_enviado ? Colors.green : Colors.red).withOpacity(0.4),
+                          color: (_enviado ? Colors.green : Colors.red).withValues(alpha: 0.4),
                           blurRadius: 24,
                           spreadRadius: 4,
                         ),
@@ -353,10 +353,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: _enviado ? Colors.green.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+                    color: _enviado ? Colors.green.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _enviado ? Colors.green.withOpacity(0.3) : Colors.white12,
+                      color: _enviado ? Colors.green.withValues(alpha: 0.3) : Colors.white12,
                     ),
                   ),
                   child: Text(

@@ -82,11 +82,11 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                ),
-                child: const Row(
+border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(
                   children: [
                     Icon(Icons.warning_amber, color: Colors.orange),
                     SizedBox(width: 10),
@@ -115,7 +115,7 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
                         margin: EdgeInsets.only(right: t == 'Viatura' ? 8 : 0),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: sel ? Colors.orange.withOpacity(0.2) : const Color(0xFF0D1F3C),
+                          color: sel ? Colors.orange.withValues(alpha: 0.2) : const Color(0xFF0D1F3C),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: sel ? Colors.orange : Colors.white12,
@@ -160,9 +160,9 @@ class _ReportVehicleScreenState extends State<ReportVehicleScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                   ),
                   child: Text(_erro, style: const TextStyle(color: Colors.redAccent)),
                 ),
